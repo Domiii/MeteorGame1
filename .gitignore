@@ -1,0 +1,35 @@
+# OS generated files #
+##########################################################
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+*~
+
+# Log files #
+##########################################################
+*.log
+
+# Private files #
+##########################################################
+*.user.cfg
+
+
+# SublimeText #
+##########################################################
+# cache files for sublime text
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+
+# workspace files are user-specific
+*.sublime-workspace
+
+# sftp configuration file
+sftp-config.json
