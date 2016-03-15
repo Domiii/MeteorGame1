@@ -14,8 +14,24 @@ body {
 }
 
 
+.body-fill {
+  overflow: hidden;
+  position:relative;
+  width: 100%;
+  height: calc(100% - 3em - 1px);
+}
+
+.navbar {
+  margin: 0;
+  height: 3em;
+}
+
 #game-container {
-  text-align: center;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 #game-container > .canvas {

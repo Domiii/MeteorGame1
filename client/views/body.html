@@ -1,5 +1,23 @@
 <body>
-	<div class="container">
-	  {{> game}}
+  <script src="/third-party/phaser/build/phaser.min.js"></script>
+  <nav class="navbar navbar-default">
+    <div class="container">
+      {{> loginButtons}}
+    </div>
+  </nav>
+  <div class="body-fill">
+    {{#unless Template.subscriptionsReady}}
+      <span>...</span>
+    {{else}}
+      {{#if currentUser}}
+        {{> game}}
+      {{else}}
+        <div class="container">
+          <div class="alert alert-danger">
+            <span>Please log in first!</span>
+          </div>
+        </div>
+      {{/if}}
+    {{/unless}}
   </div>
 </body>

@@ -9,3 +9,7 @@ Meteor.publish("tasks", function () {
     ]
   });
 });
+
+Meteor.publish("players", function () {
+  return Tasks.find();
+});
