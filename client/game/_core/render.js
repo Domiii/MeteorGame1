@@ -1,6 +1,6 @@
 'use strict';
 
-Global.render = function() {
+Game.render = function() {
   game.debug.cameraInfo(game.camera, 32, 32);
   game.debug.spriteCoords(GameState.me, 32, 500);
 };

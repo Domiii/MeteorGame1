@@ -11,5 +11,9 @@ Meteor.publish("tasks", function () {
 });
 
 Meteor.publish("players", function () {
-  return Tasks.find();
+  return Players.find();
+});
+
+Meteor.publish("users", function () {
+  return Meteor.users.find();
 });
