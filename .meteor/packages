@@ -20,3 +20,5 @@ accounts-ui
 service-configuration
 accounts-google
 twbs:bootstrap
+stevezhu:lodash
+domiii:load-order-util

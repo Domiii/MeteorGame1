@@ -2,5 +2,5 @@
 
 Game.render = function() {
   game.debug.cameraInfo(game.camera, 32, 32);
-  game.debug.spriteCoords(GameState.me, 32, 500);
+  game.debug.spriteCoords(Game.currentPlayer, 32, 500);
 };

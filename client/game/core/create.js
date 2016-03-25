@@ -4,10 +4,15 @@ var createMe = function() {
   var world = game.world;
   world.classType = PhaserExtensions.GameObject;
   
-  Game.currentPlayer = world.create(0, 0, 'player');
+  var player = Game.currentPlayer = world.create(0, 0, 'player');
 
-  game.physics.p2.enable(Game.currentPlayer);
-  game.camera.follow(Game.currentPlayer);
+  game.physics.p2.enable(player);
+  game.camera.follow(player);
+  player.body.fixedRotation = true;
+
+  player.addComponent('Unit');
+  player.addComponent('Player');
+  player.addComponent('CurrentPlayer');
 };
 
 Game.create = function() {
