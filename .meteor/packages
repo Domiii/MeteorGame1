@@ -22,3 +22,4 @@ accounts-google
 twbs:bootstrap
 stevezhu:lodash
 domiii:load-order-util
+domiii:meteor-phaser

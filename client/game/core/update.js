@@ -1,4 +1,4 @@
 'use strict';
 
-Game.update = function() {
-};
+defineGlobal('GameStatus.update', function() {
+});

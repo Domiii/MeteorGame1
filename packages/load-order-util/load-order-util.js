@@ -1,12 +1,15 @@
+/* put global variables first, so Meteor picks them up */
+defineGlobal = null;
 dependsOnSymbols = null;
 
-_ = lodash;
+_ = lodash;   // replace underscore with lodash
 
 (function(freeGlobal) {
   'use strict';
 
   var delayedInitializers = [];
   var alreadyStarted = false;
+
 
   function isSymbolReady(symbolName) {
     return !!_.get(window, symbolName);
@@ -61,9 +64,13 @@ _ = lodash;
       ' symbols: [' + missing.join() + '] - ' + initializer.cb;
   }
 
+  defineGlobal = function(path, value) {
+    _.set(Global, path, value);
+  };
+
   /**
    * Execute callback once all of the given symbols are available
-   * (only checked when a new script is loaded)
+   * (only checked during Meteor startup)
    */
   dependsOnSymbols = function(symbolNameOrNames, cb) {
     console.assert(cb instanceof Function, "Invalid argument `cb` must be a function");

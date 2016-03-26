@@ -1,10 +1,7 @@
 'use strict';
 
-Global.Game = {};
-
-
-Game.GameConfig = {
+defineGlobal('GameStatus.Config', {
   worldSize: 10000
-};
+});
 
-Game.GameConfig.worldRadius = Game.GameConfig.worldSize/2;
+GameStatus.Config.worldRadius = GameStatus.Config.worldSize/2;

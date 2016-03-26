@@ -34,7 +34,7 @@ Global.StartGame = function(){
   // start the game
   var cont = $('#game-container');
   Global.game = new Phaser.Game(getOptimalGameWidth(), getOptimalGameHeight(), Phaser.AUTO, 'game-container',
-    { preload: Game.preload, create: Game.create, update: Game.update, render: Game.render });
+    { preload: GameStatus.preload, create: GameStatus.create, update: GameStatus.update, render: GameStatus.render });
 
   $(window).resize(resizeGame);
   setTimeout(resizeGame);
