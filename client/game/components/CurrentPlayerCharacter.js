@@ -56,5 +56,7 @@ PhaserExtensions.defineComponent('CurrentPlayerCharacter', {
 }, {
   // CurrentPlayerCharacter also is a PlayerCharacter
   requiredComponents: ['PlayerCharacter'],
-  controlLost: false
+  defaultValues: {
+    controlLost: false
+  }
 });
