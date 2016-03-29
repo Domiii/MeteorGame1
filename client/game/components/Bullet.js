@@ -13,10 +13,6 @@ PhaserExtensions.defineComponent('Bullet', {
 
     // TODO: Add collision handling - http://jsfiddle.net/bstevens/a6paycw6
     body.onBeginContact.add(this.onHit, this);
-
-
-    // add default collision shape
-    body.setCircle(this.gameObject.width / 2);
   },
 
   update: function() {
@@ -24,6 +20,6 @@ PhaserExtensions.defineComponent('Bullet', {
   },
 
   onHit: function(body1, body2, shape1, shape2, contactEquations) {
-
+    
   }
 });

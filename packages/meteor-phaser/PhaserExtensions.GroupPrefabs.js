@@ -15,7 +15,7 @@
      * Set of global default values
      */
     defaults: {
-      groupPrefab.classType: PhaserExtensions.GameObject
+      classType: PhaserExtensions.GameObject
     },
 
     overrideDefault: function(prop, value) {
@@ -56,12 +56,8 @@
       this.list.push(groupPrefab);
       this.byName[name] = groupPrefab;
 
-      // merge in defaults
-      for (var prop in this.defaults) {
-        if (!groupPrefab[prop]) {
-          groupPrefab[prop] = this.defaults[prop];
-        }
-      }
+      // merge in defaults (but don't override any already set values)
+      squishy.mergeWithoutOverride(groupPrefab, this.defaults);
 
       // convert classType, if string is given
       if (_.isString(groupPrefab.classType)) {

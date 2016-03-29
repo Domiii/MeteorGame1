@@ -11,6 +11,13 @@
    */
   PhaserExtensions.ComponentPrototypeBase = {
     /**
+     * Initialize defaults, if no initial values are given
+     */
+    // initDefaults: function() {
+    //   return {};
+    // },
+
+    /**
      * Called when component is created, with given set of arguments
      */
     init: function() {

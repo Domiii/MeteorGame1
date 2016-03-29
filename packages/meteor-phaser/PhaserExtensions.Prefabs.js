@@ -60,7 +60,7 @@
         return {};
       }
       return prefab;
-    }
+    },
 
     instantiate: function(prefabOrName, game, x, y) {
       return this.instantiateInGroup(prefabOrName, game.world, x, y);
@@ -117,11 +117,18 @@
 
       for (var i = 0; i < componentCfgs.length; ++i) {
         var componentCfg = componentCfgs[i];
+        var name, initialValues;
 
-        var name = componentCfg.name;
-        var data = componentCfg.data;
+        if (_.isString(componentCfg)) {
+          name = componentCfg;
+          initialValues = null;
+        }
+        else {
+          name = componentCfg.name;
+          initialValues = componentCfg;
+        }
 
-        gameObject.addComponent(name, data);
+        gameObject.addComponent(name, initialValues);
       }
     }
   };

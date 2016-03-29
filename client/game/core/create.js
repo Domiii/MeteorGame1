@@ -3,9 +3,8 @@
 function configureGlobals() {
   // set group defaults
   PhaserExtensions.GroupPrefabs.overrideDefaults({
-    'classType': PhaserExtensions.GameObject,
-    'physicsBodyType': Phaser.Physics.P2JS,
-    'enableBody': true
+    physicsBodyType: Phaser.Physics.P2JS,
+    enableBody: true
   });
 
   // assign group defaults to world
@@ -15,10 +14,7 @@ function configureGlobals() {
 function setupWorld() {
   // world setup
   var cfg = GameStatus.Config;
-  var backgroundSize = 1920;
-  var backgroundRadius = backgroundSize/2;
 
-  //game.add.tileSprite(-backgroundRadius, -backgroundRadius, backgroundSize, backgroundSize, 'background');
   game.add.tileSprite(-cfg.worldRadius, -cfg.worldRadius, cfg.worldSize, cfg.worldSize, 'background');
   game.world.setBounds(-cfg.worldRadius, -cfg.worldRadius, cfg.worldSize, cfg.worldSize);
   game.physics.startSystem(Phaser.Physics.P2JS);
@@ -30,7 +26,16 @@ function createGroups() {
 
     bullets1: PhaserExtensions.GroupPrefabs.createGroup(game, {
       objectPrefab: {
-        sprite: 'bullet1'
+        sprite: 'bullet1',
+        body: {
+          shapes: 
+        },
+        components: [
+          {
+            name: 'Bullet',
+            speed: 800
+          }
+        ]
       }
     })
   };
@@ -47,7 +52,6 @@ function createCurrentPlayerCharacter() {
   character.addComponent('CurrentPlayerCharacter', { speed: 300 });
   character.addComponent('Shooter', {
     bulletsGroup: GameStatus.groups.bullets,
-    bulletSprite: 'bullet1',
     bulletSpeed: 300,
     shootDelay: 1
   });
