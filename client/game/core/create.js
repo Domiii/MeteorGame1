@@ -1,6 +1,16 @@
 'use strict';
 
 function configureGlobals() {
+  // set object defaults
+  PhaserExtensions.Prefabs.overrideDefaults({
+    body: {
+      collideWorldBounds: true,
+      immovable: true,
+      fixedRotation: true
+    }
+  });
+
+
   // set group defaults
   PhaserExtensions.GroupPrefabs.overrideDefaults({
     physicsBodyType: Phaser.Physics.P2JS,
@@ -27,10 +37,8 @@ function createGroups() {
     bullets1: PhaserExtensions.GroupPrefabs.createGroup(game, {
       objectPrefab: {
         sprite: 'bullet1',
-        body: {
-          shapes: 
-        },
         components: [
+          'CircleShape',
           {
             name: 'Bullet',
             speed: 800

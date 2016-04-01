@@ -4,26 +4,42 @@
   /**
    * Provides utilities for registering and instantiating from group prefabs.
    *
-   * TODO: Group hierarchy registration and definitions (but needs to be done per stage)
+   * TODO: Group hierarchy registration and definitions (might want to have one set per stage)
    * TODO: Collision group prefabs
    */
   PhaserExtensions.GroupPrefabs = {
+    _specialPropertyPaths: [
+      'name'
+    ],
+
     list: [],
     byName: {},
 
     /**
      * Set of global default values
      */
-    defaults: {
+    _defaults: {
       classType: PhaserExtensions.GameObject
     },
 
-    overrideDefault: function(prop, value) {
-      this.defaults[prop] = value;
+    _defaultsPrefab: null,
+
+    overrideDefault: function(propPath, value) {
+      _.set(this._defaults, propPath, value);
+      this._defaultsPrefab = null;    // defaultsPrefab needs to be rebuilt
     },
 
     overrideDefaults: function(cfg) {
-      _.merge(this.defaults, cfg);
+      _.merge(this._defaults, cfg);
+      this._defaultsPrefab = null;    // defaultsPrefab needs to be rebuilt
+    },
+
+    getDefaultPrefab: function() {
+      var prefab = this._defaultsPrefab;
+      if (!prefab) {
+        prefab = this._defaultsPrefab = this._convertToGroupPrefab(this._defaults);
+      }
+      return prefab;
     },
 
     register: function(prefabs) {
@@ -45,8 +61,9 @@
    * @param {PhysicsBodyType} [groupPrefab.classType]
    * @param {Object} [groupPrefab.objectPrefab]
      */
-    registerOne: function(name, groupPrefab) {
-     groupPrefab.name = name;
+    registerOne: function(name, _groupPrefab) {
+      var groupPrefab = this._convertToGroupPrefab(_groupPrefab);
+      groupPrefab.name = name;
 
       if (this.byName[name]) {
         console.warning('Overriding group prefab of name because name has been registered more than once: ' + 
@@ -56,10 +73,10 @@
       this.list.push(groupPrefab);
       this.byName[name] = groupPrefab;
 
-      // merge in defaults (but don't override any already set values)
-      squishy.mergeWithoutOverride(groupPrefab, this.defaults);
+      // merge in defaults
+      _.defaultsDeep(groupPrefab, this.getDefaultPrefab());
 
-      // convert classType, if string is given
+      // lookup classType, if string is given
       if (_.isString(groupPrefab.classType)) {
         groupPrefab.classType = _.get(Global, groupPrefab.classType);
       }
@@ -75,37 +92,52 @@
     },
 
     createDefaultGroup: function(game, parent) {
-      return this.createGroup(game, parent, this.defaults);
+      return this.createGroup(game, parent, this.getDefaultPrefab());
     },
 
     createGroup: function(game, parent, nameOrPrefab) {
-      var prefab;
-      if (_.isString(nameOrPrefab)) {
-        prefab = this.getGroupPrefab(nameOrPrefab);
-      }
-      else {
-        prefab = nameOrPrefab;
-      }
-
+      var prefab = this.asGroupPrefab(nameOrPrefab);
       var group = new PhaserExtensions.ExtendedGroup(game, parent, prefab);
       return group;
     },
 
     assignDefaultsTo: function(group) {
-      this.assignTo(group, this.defaults);
+      this.assignTo(group, this.getDefaultPrefab());
     },
 
     assignTo: function(group, prefabOrName) {
-      var prefab;
+      var prefab = this.asGroupPrefab(prefabOrName);
+
+      // merge in all raw data directly
+      _.merge(group, prefab.data);
+    },
+
+    isGroupPrefab: function(obj) {
+      return obj.___isGroupPrefab____ === true;
+    },
+
+    asGroupPrefab: function(prefabOrName) {
       if (_.isString(prefabOrName)) {
-        prefab = this.getGroupPrefab(prefabOrName);
+        return this.getGroupPrefab(prefabOrName);
       }
       else {
-        prefab = prefabOrName;
+        return this._convertToGroupPrefab(prefabOrName);
+      }
+    },
+
+    _convertToGroupPrefab: function(possiblePrefab) {
+      if (this.isGroupPrefab(possiblePrefab)) {
+        return possiblePrefab;
       }
 
-      // lazy method... does not actually do type or other kinds of checking... potentially dangerous
-      _.merge(group, prefab);
+      // convert to group prefab
+      var prefab = PhaserExtensions.Prefabs.collectPropertiesExcept(
+        possiblePrefab, this._specialPropertyPaths, 'data');
+
+      // flag as prefab
+      prefab.___isGroupPrefab____ = true;
+
+      return prefab;
     }
   };
 })(this);
