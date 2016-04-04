@@ -1,13 +1,17 @@
 (function(Global) {
   'use strict';
 
-
   PhaserExtensions.Prefabs = {
-    _specialPropertyPaths: [
-      'x', 'y', 'sprite', 'name',
-      'body.sensorOnly',
-      'components'
-    ],
+    _properties: {
+      special: [
+        'x', 'y', 'sprite', 'name',
+        'components',
+        //'body.sensorOnly',
+      ],
+      deepCopy: {
+        'body'
+      }
+    },
 
     list: [],
     byName: {},
@@ -43,14 +47,12 @@
     },
 
     /**
-     * @param {Object} [prefab]
-     * @param {String|Sprite} [prefab.sprite]
-     * @param {Number} [prefab.x]
-     * @param {Number} [prefab.y]
-     * @param {Object} [prefab.body]
-     * @param {Array.<Object>} [prefab.components]
-     * @param {String} [prefab.components.<name>]
-     * @param {Object} [prefab.components.<data>]
+     * @param {Object} [_prefab]
+     * @param {String|Sprite} [_prefab.sprite]
+     * @param {Number} [_prefab.x]
+     * @param {Number} [_prefab.y]
+     * @param {Array.<Object>} [_prefab.components]
+     * @param {String} [_prefab.components]
      */
     registerOne: function(name, _prefab) {
       var prefab = this.convertToPrefab(_prefab);
@@ -63,9 +65,6 @@
 
       this.list.push(prefab);
       this.byName[name] = prefab;
-
-      // merge in defaults
-      _.defaultsDeep(groupPrefab, this.getDefaultPrefab());
     },
 
     getPrefab: function(name) {
@@ -90,59 +89,8 @@
       }
 
       var gameObject = group.create(x, y, prefab.sprite);
-      this._assignTo(gameObject, prefab);
+      gameObject.assignPrefabValues(prefab);
       return gameObject;
-    },
-
-    assignTo: function(gameObject, possiblePrefab) {
-      var prefab = this.convertToPrefab(possiblePrefab);
-      this._assignTo(gameObject, prefab);
-    },
-
-    _assignTo: function(gameObject, prefab) {
-      // merge in all data recursively
-      _.merge(gameObject, prefab.data);
-
-      this.assignBodySpecials(gameObject, prefab.body);
-      this.addComponents(gameObject, prefab.components);
-    },
-
-    assignBodySpecials: function(gameObject, bodyCfg) {
-      if (!bodyCfg) {
-        return;
-      }
-
-      var body = gameObject.body;
-
-      if (bodyCfg.shapes) {
-        // TODO: Add shapes
-      }
-
-      if (bodyCfg.sensor) {
-        // TODO: Override sensor for all shapes
-      }
-    },
-
-    addComponents: function(gameObject, componentCfgs) {
-      if (!(componentCfgs instanceof Array)) {
-        return;
-      }
-
-      for (var i = 0; i < componentCfgs.length; ++i) {
-        var componentCfg = componentCfgs[i];
-        var name, initialValues;
-
-        if (_.isString(componentCfg)) {
-          name = componentCfg;
-          initialValues = null;
-        }
-        else {
-          name = componentCfg.name;
-          initialValues = componentCfg;
-        }
-
-        gameObject.addComponent(name, initialValues);
-      }
     },
 
     isPrefab: function(obj) {
@@ -158,22 +106,40 @@
       }
     },
 
+    modifyPrefab: function(nameOrPrefabDst, nameOrPrefabSrc) {
+      var dst = this.asPrefab(nameOrPrefabDst);
+      var src = this.asPrefab(nameOrPrefabSrc);
+
+      return _.merge(dst, src);
+    },
+
     _convertToPrefab: function(possiblePrefab) {
       if (this.isPrefab(possiblePrefab)) {
         return possiblePrefab;
       }
 
+      // convert data format
       var prefab = this.collectPropertiesExcept(possiblePrefab, this._specialPropertyPaths, 'data');
 
-      // flag as prefab
-      prefab.___isPrefab____ = true;
+      // add and touch up prefab properties
+      this._decoratePrefab(prefab);
 
       return prefab;
     },
 
+    _decoratePrefab: function(prefab) {
+      // flag as prefab
+      prefab.___isPrefab____ = true;
+
+      // merge in defaults
+      _.defaultsDeep(prefab, this.getDefaultPrefab());
+    },
+
     collectPropertiesExcept: function(obj, excludePropPaths, collectPath) {
       // clone object
-      var obj2 = _.cloneDeep(obj);
+      var obj2 = _.cloneDeepWith(obj, function(value, key, currentObj) {
+        // TODO: We only want to shallow-copy most kinds of objects
+      });
 
       // get existing collection, or create new
       var collection = _.get(obj2, collectPath) || {};
@@ -185,7 +151,7 @@
       var dst = {};
 
       // take out all special properties from collection, and add to dst directly
-      for (var propPath in propPaths) {
+      for (var propPath in excludePropPaths) {
         var val = _.get(collection, propPath);
         _.unset(collection, propPath);
         _.set(dst, propPath, val);

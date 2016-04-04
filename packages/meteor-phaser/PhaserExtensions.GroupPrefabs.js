@@ -8,9 +8,12 @@
    * TODO: Collision group prefabs
    */
   PhaserExtensions.GroupPrefabs = {
-    _specialPropertyPaths: [
-      'name'
-    ],
+    _properties: {
+      special: [
+        'name',
+        'objectPrefab'
+      ]
+    },
 
     list: [],
     byName: {},
@@ -50,16 +53,14 @@
     },
 
     /**
-   * @param {Object} [groupPrefab]
-   * @param {Object} [groupPrefab.game]
-   * @param {Object} [groupPrefab.parent]
-   * @param {String} [groupPrefab.name]
-   * @param {String} [groupPrefab.classType=PhaserExtensions.GameObject]
-   * @param {Boolean} [groupPrefab.addToStage]
-   * @param {Boolean} [groupPrefab.enableBody]
-   * @param {PhysicsBodyType} [groupPrefab.physicsBodyType]
-   * @param {PhysicsBodyType} [groupPrefab.classType]
-   * @param {Object} [groupPrefab.objectPrefab]
+     * @param {Object} [_groupPrefab]
+     * @param {String} [_groupPrefab.name]
+     * @param {String} [_groupPrefab.classType=PhaserExtensions.GameObject]
+     * @param {Boolean} [_groupPrefab.addToStage]
+     * @param {Boolean} [_groupPrefab.enableBody]
+     * @param {PhysicsBodyType} [_groupPrefab.physicsBodyType]
+     * @param {PhysicsBodyType} [_groupPrefab.classType]
+     * @param {Object} [_groupPrefab.objectPrefab]
      */
     registerOne: function(name, _groupPrefab) {
       var groupPrefab = this._convertToGroupPrefab(_groupPrefab);
@@ -72,14 +73,6 @@
 
       this.list.push(groupPrefab);
       this.byName[name] = groupPrefab;
-
-      // merge in defaults
-      _.defaultsDeep(groupPrefab, this.getDefaultPrefab());
-
-      // lookup classType, if string is given
-      if (_.isString(groupPrefab.classType)) {
-        groupPrefab.classType = _.get(Global, groupPrefab.classType);
-      }
     },
 
     getGroupPrefab: function(name) {
@@ -134,10 +127,25 @@
       var prefab = PhaserExtensions.Prefabs.collectPropertiesExcept(
         possiblePrefab, this._specialPropertyPaths, 'data');
 
+      // add and touch up prefab properties
+      this._decorateGroupPrefab(prefab);
+
+      return prefab;
+    },
+
+    _decorateGroupPrefab: function(prefab) {
       // flag as prefab
       prefab.___isGroupPrefab____ = true;
 
-      return prefab;
+      // merge in defaults
+      _.defaultsDeep(prefab, this.getDefaultPrefab());
+
+      var data = prefab.data;
+
+      // lookup classType, if string is given
+      if (_.isString(data.classType)) {
+        data.classType = _.get(Global, data.classType);
+      }
     }
   };
 })(this);

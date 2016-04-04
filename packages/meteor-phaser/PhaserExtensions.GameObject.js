@@ -1,27 +1,17 @@
 (function(Global) {
   'use strict';
 
-  PhaserExtensions.GameObject = function(game, x, y, key, frame) {
-    // call base ctor
-    Phaser.Sprite.call(this, game, x, y, key, frame);
-
-    this._goComponents = [];
-    this._goComponentsByName = {};
-
-    this.events.onAddedToGroup.add(this.start, this);
-    this.events.onRemovedFromGroup.add(this.stop, this);
-  };
-
-  PhaserExtensions.GameObject.prototype = Object.create(Phaser.Sprite.prototype);
-  PhaserExtensions.GameObject.prototype.constructor = PhaserExtensions.GameObject;
-  _.assign(PhaserExtensions.GameObject.prototype, {
+  /**
+   * Methods for getting, setting, adding, requiring components
+   */
+  PhaserExtensions.ComponentContainerBase = {
     addComponent: function(name, initialValues) {
       // create component
-      var clazz = PhaserExtensions.AllComponents[name];
-      if (clazz == null) {
+      var Clazz = PhaserExtensions.AllComponents[name];
+      if (Clazz == null) {
         throw new Error("There is no component defined with given name: " + name);
       }
-      var component = new clazz(name, this, initialValues);
+      var component = new Clazz(name, this, initialValues);
 
       // reset
       component.resetComponent();
@@ -34,9 +24,9 @@
       }
       components.push(component);
 
-      if (clazz.requiredComponents instanceof Array) {
-        for (var i = 0; i < clazz.requiredComponents.length; ++i) {
-          var compName = clazz.requiredComponents[i];
+      if (Clazz.requiredComponents instanceof Array) {
+        for (var i = 0; i < Clazz.requiredComponents.length; ++i) {
+          var compName = Clazz.requiredComponents[i];
           this.requireComponent(compName);
         }
       }
@@ -47,9 +37,31 @@
       return component;
     },
 
+    addComponents: function(componentCfgs) {
+      if (!(componentCfgs instanceof Array)) {
+        return;
+      }
+
+      for (var i = 0; i < componentCfgs.length; ++i) {
+        var componentCfg = componentCfgs[i];
+        var name, initialValues;
+
+        if (_.isString(componentCfg)) {
+          name = componentCfg;
+          initialValues = null;
+        }
+        else {
+          name = componentCfg.name;
+          initialValues = componentCfg;
+        }
+
+        this.addComponent(name, initialValues);
+      }
+    },
+
     /**
      * Gets the first component of given name, or adds a new component if 
-     * object does not have it yet.
+     * object does not have one yet.
      */
     requireComponent: function(name) {
       var c = this.getComponent(name);
@@ -57,6 +69,42 @@
         c = this.addComponent(name);
       }
       return c;
+    },
+
+    /**
+     * Requires a component of given name and overrides the given values.
+     */
+    setComponent: function(name, values) {
+      var c = this.getComponent(name);
+      if (!c) {
+        c = this.addComponent(name, values);
+      }
+      else {
+        c.resetComponent(values);
+      }
+      return c;
+    },
+
+    setComponents: function(componentCfgs) {
+      if (!(componentCfgs instanceof Array)) {
+        return;
+      }
+
+      for (var i = 0; i < componentCfgs.length; ++i) {
+        var componentCfg = componentCfgs[i];
+        var name, values;
+
+        if (_.isString(componentCfg)) {
+          name = componentCfg;
+          values = null;
+        }
+        else {
+          name = componentCfg.name;
+          values = componentCfg;
+        }
+
+        this.setComponent(name, values);
+      }
     },
 
     getComponents: function(name) {
@@ -86,7 +134,13 @@
         }
       }
     },
+  };
 
+
+  /**
+   * Default set of GameObject messages
+   */
+  PhaserExtensions.GameObjectMessages = {
     start: function() {
       for (var i = 0; i < this._goComponents.length; ++i) {
         var component = this._goComponents[i];
@@ -118,5 +172,45 @@
         component.resetComponent();
       }
     }
-  });
+  };
+
+
+  /**
+   * Set of useful extra methods for GameObjects
+   */
+  PhaserExtensions.GameObjectMethods = {
+    /**
+     * Assign values and components from given prefab.
+     */
+    assignPrefabValues: function(nameOrPrefab) {
+      var prefab = PhaserExtensions.Prefabs.asPrefab(nameOrPrefab);
+
+      // merge in all data recursively
+      _.merge(this, prefab.data);
+
+      this.setComponents(prefab.components);
+    },
+  };
+
+  PhaserExtensions.GameObject = function(game, x, y, key, frame) {
+    // call base ctor
+    Phaser.Sprite.call(this, game, x, y, key, frame);
+
+    // data managed by ComponentContainerBase
+    this._goComponents = [];
+    this._goComponentsByName = {};
+
+    // hooking up some GameObjectMessages
+    this.events.onAddedToGroup.add(this.start, this);
+    this.events.onRemovedFromGroup.add(this.stop, this);
+  };
+
+  PhaserExtensions.GameObject.prototype = Object.create(Phaser.Sprite.prototype);
+  PhaserExtensions.GameObject.prototype.constructor = PhaserExtensions.GameObject;
+  _.assign(PhaserExtensions.GameObject.prototype,
+    [
+      PhaserExtensions.ComponentContainerBase, 
+      PhaserExtensions.GameObjectMessages,
+      PhaserExtensions.GameObjectMethods
+    ]);
 })(this);

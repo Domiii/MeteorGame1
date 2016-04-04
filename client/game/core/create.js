@@ -53,18 +53,35 @@ function createGroups() {
 function createCurrentPlayerCharacter() {
   //var group = game.world;
   var group = GameStatus.groups.units;
-  var character = GameStatus.currentPlayerCharacter = group.create(0, 0, 'octacat');
+  var character = GameStatus.currentPlayerCharacter = group.instantiatePrefab({
+    sprite: 'octacat',
+    scale: {x: 0.4, y: 0.4}
+  });
 
   // TODO: Get or create player object
   character.addComponent('PlayerCharacter', { player: null });
   character.addComponent('CurrentPlayerCharacter', { speed: 300 });
   character.addComponent('Shooter', {
     bulletsGroup: GameStatus.groups.bullets,
-    bulletSpeed: 300,
-    shootDelay: 1
+    shootDelay: 0.8
   });
   
   game.camera.follow(character);
+}
+
+function createNPCs() {
+  var group = GameStatus.groups.units;
+
+  GameStatus.npcs = [
+    group.instantiatePrefab({
+      x: 200, y: 0,
+      sprite: 'octacat',
+      scale: {x: 0.2, y: 0.2},
+      components: [
+        'Unit'
+      ]
+    })
+  ];
 }
 
 defineGlobal('GameStatus.create', function() {
@@ -83,6 +100,9 @@ defineGlobal('GameStatus.create', function() {
 
   // create currentPlayerCharacter
   createCurrentPlayerCharacter();
+
+  // create NPCs
+  createNPCs();
 
   // input configuration
   GameStatus.cursors = game.input.keyboard.createCursorKeys();
