@@ -183,10 +183,7 @@
      * Assign values and components from given prefab.
      */
     assignPrefabValues: function(nameOrPrefab) {
-      var prefab = PhaserExtensions.Prefabs.asPrefab(nameOrPrefab);
-
-      // merge in all data recursively
-      _.merge(this, prefab.data);
+      PhaserExtensions.assignPrefabValues(this, nameOrPrefab);
 
       this.setComponents(prefab.components);
     },

@@ -8,8 +8,11 @@
         'components',
         //'body.sensorOnly',
       ],
-      deepCopy: {
-        'body'
+      deepMerge: {
+        data: {
+          'body': {
+          }
+        }
       }
     },
 
@@ -27,7 +30,7 @@
     },
 
     overrideDefaults: function(cfg) {
-      _.merge(this._defaults, cfg);
+      this._mixedMergeDontOverride(this._defaults, cfg, this._properties.deepMerge);
       this._defaultsPrefab = null;    // defaultsPrefab needs to be rebuilt
     },
 
@@ -93,6 +96,13 @@
       return gameObject;
     },
 
+    assignPrefabValues: function(obj, nameOrPrefab) {
+      var prefab = this.asPrefab(nameOrPrefab);
+
+      // merge in all data
+      this._mixedMerge(this, prefab.data, this._properties.deepMerge);
+    },
+
     isPrefab: function(obj) {
       return obj.___isPrefab____ === true;
     },
@@ -119,7 +129,7 @@
       }
 
       // convert data format
-      var prefab = this.collectPropertiesExcept(possiblePrefab, this._specialPropertyPaths, 'data');
+      var prefab = this.collectPropertiesExcept(possiblePrefab, this._properties.special, 'data');
 
       // add and touch up prefab properties
       this._decoratePrefab(prefab);
@@ -135,18 +145,27 @@
       _.defaultsDeep(prefab, this.getDefaultPrefab());
     },
 
+    _mixedMerge: function(dst, src, deepMergeCfg) {
+      var customizer = function(objValue, srcValue, key, object, source, stack) {
+        // TODO: We want to deep-copy (merge) given subset of properties
+      };
+      _.assignWith(dst, src, customizer);
+    },
+
+    _mixedMergeDontOverride: function() {
+      // TODO: Version of _.defaults with customizer callback...
+    },
+
     collectPropertiesExcept: function(obj, excludePropPaths, collectPath) {
       // clone object
-      var obj2 = _.cloneDeepWith(obj, function(value, key, currentObj) {
-        // TODO: We only want to shallow-copy most kinds of objects
-      });
+      var obj2 = _.clone(obj);
 
       // get existing collection, or create new
       var collection = _.get(obj2, collectPath) || {};
 
       // merge everything into the collection object (but exclude itself)
       _.unset(obj2, collectPath);
-      _.merge(collection, obj2);
+      _.assign(collection, obj2);
 
       var dst = {};
 
@@ -162,7 +181,7 @@
 
       // clone again, to reduce the chance of the final object being in slow mode
       // (which is often caused by deletion)
-      return _.cloneDeep(dst);
+      return _.clone(dst);
     }
   };
 })(this);
