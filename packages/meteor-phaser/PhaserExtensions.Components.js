@@ -53,10 +53,14 @@
     /**
      * Reset values to their default
      */
-    resetComponent: function() {
+    resetComponent: function(values) {
       // first reset to component defaults
       if (!!this.constructor.defaultValues) {
         _.merge(this, this.constructor.defaultValues);
+      }
+
+      if (!!values) {
+        this._initialValues = values;
       }
 
       // then override with initial values for this object
