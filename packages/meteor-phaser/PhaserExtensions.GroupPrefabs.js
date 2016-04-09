@@ -12,7 +12,9 @@
       special: [
         'name',
         'objectPrefab'
-      ]
+      ],
+      deepMerge: {
+      }
     },
 
     list: [],
@@ -33,7 +35,7 @@
     },
 
     overrideDefaults: function(cfg) {
-      _.merge(this._defaults, cfg);
+      this._mixedMergeDontOverride(this._defaults, cfg, this._properties.deepMerge);
       this._defaultsPrefab = null;    // defaultsPrefab needs to be rebuilt
     },
 
@@ -95,14 +97,14 @@
     },
 
     assignDefaultsTo: function(group) {
-      this.assignTo(group, this.getDefaultPrefab());
+      this.assignPrefabValues(group, this.getDefaultPrefab());
     },
 
-    assignTo: function(group, prefabOrName) {
+    assignPrefabValues: function(group, prefabOrName) {
       var prefab = this.asGroupPrefab(prefabOrName);
 
-      // merge in all raw data directly
-      _.merge(group, prefab.data);
+      // merge in all data
+      this._mixedMerge(group, prefab.data, this._properties.deepMerge);
     },
 
     isGroupPrefab: function(obj) {
@@ -138,7 +140,7 @@
       prefab.___isGroupPrefab____ = true;
 
       // merge in defaults
-      _.defaultsDeep(prefab, this.getDefaultPrefab());
+      PhaserExtensions.Prefabs._mixedMergeDontOverride(prefab, this.getDefaultPrefab(), this._properties.deepMerge);
 
       var data = prefab.data;
 

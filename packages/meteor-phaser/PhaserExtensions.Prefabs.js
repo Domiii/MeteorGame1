@@ -100,7 +100,7 @@
       var prefab = this.asPrefab(nameOrPrefab);
 
       // merge in all data
-      this._mixedMerge(this, prefab.data, this._properties.deepMerge);
+      this._mixedMerge(obj, prefab.data, this._properties.deepMerge);
     },
 
     isPrefab: function(obj) {
@@ -120,7 +120,7 @@
       var dst = this.asPrefab(nameOrPrefabDst);
       var src = this.asPrefab(nameOrPrefabSrc);
 
-      return _.merge(dst, src);
+      return this._mixedMerge(dst, src, this._properties.deepMerge);
     },
 
     _convertToPrefab: function(possiblePrefab) {
@@ -142,18 +142,42 @@
       prefab.___isPrefab____ = true;
 
       // merge in defaults
-      _.defaultsDeep(prefab, this.getDefaultPrefab());
+      this._mixedMergeDontOverride(prefab, this.getDefaultPrefab(), this._properties.deepMerge);
     },
 
-    _mixedMerge: function(dst, src, deepMergeCfg) {
+    _mixedMerge: function(dst, src, deepMergeProps) {
+      var doMerge = this._mixedMerge;
       var customizer = function(objValue, srcValue, key, object, source, stack) {
-        // TODO: We want to deep-copy (merge) given subset of properties
+        if (deepMergeProps && deepMergeProps[key]) {
+          // deep-copy (merge) given subset of properties
+          srcValue = srcValue || {};
+          objValue = objValue || {};
+          doMerge(objValue, srcValue, deepMergeProps[key]);
+          return objValue;
+        }
       };
       _.assignWith(dst, src, customizer);
     },
 
-    _mixedMergeDontOverride: function() {
-      // TODO: Version of _.defaults with customizer callback...
+    /**
+     * This is similar to _.defaults with a customizer to deep-merge given subset of properties
+     */
+    _mixedMergeDontOverride: function(dst, src, deepMergeProps) {
+      var doMerge = this._mixedMergeDontOverride;
+      var customizer = function(objValue, srcValue, key, object, source, stack) {
+        if (deepMergeProps && deepMergeProps[key]) {
+          // deep-copy (merge) given subset of properties
+          srcValue = srcValue || {};
+          objValue = objValue || {};
+          doMerge(objValue, srcValue, deepMergeProps[key]);
+          return objValue;
+        }
+        else if (objValue !== undefined) {
+          // keep the original
+          return objValue;
+        }
+      };
+      _.assignWith(dst, src, customizer);
     },
 
     collectPropertiesExcept: function(obj, excludePropPaths, collectPath) {
